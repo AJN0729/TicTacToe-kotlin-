@@ -4,19 +4,21 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import androidx.appcompat.app.AlertDialog
 import com.example.myapplicationtictactoe.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    enum class Turn
-    {
+    enum class Turn {
         O,
         X
     }
 
     private var firstTurn = Turn.X
-    private var  currentTurn = Turn.X
+    private var currentTurn = Turn.X
     private var boardList = mutableListOf<Button>()
+    private var scoreX = 0
+    private var scoreO = 0
 
     private lateinit var binding: ActivityMainBinding
 
@@ -43,7 +45,83 @@ class MainActivity : AppCompatActivity() {
         if (view !is Button)
             return
         addToBoard(view)
+
+        if(checkForWinner(O)){
+            scoreO++
+            result("O Wins!")
+        }
+
+        else if(checkForWinner(X)){
+            scoreX++
+            result("X Wins!")
+        }
+
+
+        else if (fullBoard()) {
+            result("Draw")
+        }
     }
+
+    private fun match(button: Button, symbol: String) = button.text == symbol
+
+    private fun checkForWinner(s: String): Boolean {
+        if (match(binding.a1, s) && match(binding.a2, s) && match(binding.a3, s))
+            return true
+        if (match(binding.b1, s) && match(binding.b2, s) && match(binding.b3, s))
+            return true
+        if (match(binding.c1, s) && match(binding.c2, s) && match(binding.c3, s))
+            return true
+
+
+        if (match(binding.a1, s) && match(binding.b1, s) && match(binding.c1, s))
+            return true
+        if (match(binding.a2, s) && match(binding.b2, s) && match(binding.c2, s))
+            return true
+        if (match(binding.a3, s) && match(binding.b3, s) && match(binding.c3, s))
+            return true
+
+
+        if (match(binding.a1, s) && match(binding.b2, s) && match(binding.c3, s))
+            return true
+        if (match(binding.a3, s) && match(binding.b2, s) && match(binding.c1, s))
+            return true
+
+        return false
+    }
+
+    private fun result(title: String) {
+        val message ="\nTotal Wins for O: $scoreO \n\nTotal Wins for X: $scoreX"
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("New Game") { _, _ ->
+                resetBoard()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun resetBoard() {
+        for (button in boardList) {
+            button.text = ""
+        }
+        if (firstTurn == Turn.O)
+            firstTurn = Turn.X
+        else if(firstTurn == Turn.X)
+            firstTurn = Turn.O
+
+        currentTurn = firstTurn
+        setTurnLabel()
+    }
+
+    private fun fullBoard(): Boolean {
+        for (button in boardList) {
+            if (button in boardList)
+                if (button.text == "")
+                    return false
+            }
+            return true
+        }
 
     private fun addToBoard(button: Button) {
         if(button.text != "")
